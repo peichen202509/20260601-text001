@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>課程報價試算器</title>
+    <!-- 引入 Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f5f3ee;
+            --accent-color: #6b7fa3;
+            --text-color: #444;
+            --card-bg: #ffffff;
+            --warning-color: #e67e22;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .input-item {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        /* 隱藏數字欄位箭頭 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .warning-text {
+            color: var(--warning-color);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            min-height: 1.2rem;
+            font-weight: 500;
+        }
+
+        .result-panel {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px dashed #eee;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+
+        .total-row {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .total-label {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .total-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .currency-symbol {
+            font-size: 1rem;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>課程報價試算器</h1>
+    
+    <div class="input-item">
+        <label>學員人數</label>
+        <input type="number" id="students" placeholder="請輸入人數" oninput="calculate()">
+    </div>
+
+    <div class="input-item">
+        <label>上課時數 (小時)</label>
+        <input type="number" id="hours" placeholder="請輸入時數" step="0.5" oninput="calculate()">
+    </div>
+
+    <div class="input-item">
+        <label>每小時單價 (NT$)</label>
+        <input type="number" id="price" placeholder="請輸入單價" oninput="calculate()">
+    </div>
+
+    <div class="input-item">
+        <label>折扣率 (%)</label>
+        <input type="number" id="discountRate" placeholder="例如 10" oninput="calculate()">
+        <div id="warning" class="warning-text"></div>
+    </div>
+
+    <div class="result-panel">
+        <div class="result-row">
+            <span>小計</span>
+            <span id="subtotal">NT$ 0</span>
+        </div>
+        <div class="result-row">
+            <span>折扣金額</span>
+            <span id="discountAmount">NT$ 0</span>
+        </div>
+        <div class="total-row">
+            <span class="total-label">總計</span>
+            <span class="total-value"><small class="currency-symbol">NT$</small><span id="grandTotal">0</span></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // 取得輸入值，若為空或非數字則視為 0
+        const students = parseFloat(document.getElementById('students').value) || 0;
+        const hours = parseFloat(document.getElementById('hours').value) || 0;
+        const price = parseFloat(document.getElementById('price').value) || 0;
+        const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+
+        // 計算邏輯
+        const subtotal = students * hours * price;
+        const discountAmount = subtotal * (discountRate / 100);
+        const grandTotal = subtotal - discountAmount;
+
+        // 折扣驗證
+        const warningEl = document.getElementById('warning');
+        if (discountRate > 30) {
+            warningEl.innerText = '⚠️ 折扣率過高，請確認';
+        } else {
+            warningEl.innerText = '';
+        }
+
+        // 格式化數字
+        const formatNum = (num) => Math.round(num).toLocaleString('zh-TW');
+
+        // 更新顯示
+        document.getElementById('subtotal').innerText = 'NT$ ' + formatNum(subtotal);
+        document.getElementById('discountAmount').innerText = 'NT$ ' + formatNum(discountAmount);
+        document.getElementById('grandTotal').innerText = formatNum(grandTotal);
+    }
+</script>
+
+</body>
+</html>
