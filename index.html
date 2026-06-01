@@ -3,204 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>課程報價試算器</title>
-    <!-- 引入 Noto Sans TC -->
+    <title>番茄鐘計時器</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #f5f3ee;
             --accent-color: #6b7fa3;
-            --text-color: #444;
-            --card-bg: #ffffff;
-            --warning-color: #e67e22;
+            --text-color: #4a4a4a;
+            --white: #ffffff;
+            --break-color: #8eb09b;
         }
 
         * {
             box-sizing: border-box;
-            font-family: 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
+            font-family: 'Noto Sans TC', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .container {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 480px;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-
-        h1 {
-            color: var(--accent-color);
-            font-size: 1.5rem;
             text-align: center;
-            margin-bottom: 30px;
-            letter-spacing: 1px;
-        }
-
-        .input-item {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #666;
-        }
-
-        input {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
+            max-width: 500px;
         }
 
-        input:focus {
-            border-color: var(--accent-color);
-        }
-
-        /* 隱藏數字欄位箭頭 */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .warning-text {
-            color: var(--warning-color);
-            font-size: 0.85rem;
-            margin-top: 5px;
-            min-height: 1.2rem;
-            font-weight: 500;
-        }
-
-        .result-panel {
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px dashed #eee;
-        }
-
-        .result-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-        }
-
-        .total-row {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-        }
-
-        .total-label {
+        #status-label {
+            font-size: 1.5rem;
             font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .total-value {
-            font-size: 2.2rem;
-            font-weight: 700;
+            margin-bottom: 1rem;
             color: var(--accent-color);
+            letter-spacing: 4px;
+            text-transform: uppercase;
         }
 
-        .currency-symbol {
-            font-size: 1rem;
-            margin-right: 4px;
+        #timer-display {
+            font-size: 10rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2.5rem;
+            font-variant-numeric: tabular-nums;
+            user-select: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        button {
+            padding: 0.8rem 2.5rem;
+            font-size: 1.1rem;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid var(--accent-color);
+            background-color: transparent;
+            color: var(--accent-color);
+            border-radius: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #btn-start {
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+
+        #round-count {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #888;
+        }
+
+        /* 響應式微調 */
+        @media (max-width: 480px) {
+            #timer-display {
+                font-size: 6rem;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>課程報價試算器</h1>
-    
-    <div class="input-item">
-        <label>學員人數</label>
-        <input type="number" id="students" placeholder="請輸入人數" oninput="calculate()">
-    </div>
-
-    <div class="input-item">
-        <label>上課時數 (小時)</label>
-        <input type="number" id="hours" placeholder="請輸入時數" step="0.5" oninput="calculate()">
-    </div>
-
-    <div class="input-item">
-        <label>每小時單價 (NT$)</label>
-        <input type="number" id="price" placeholder="請輸入單價" oninput="calculate()">
-    </div>
-
-    <div class="input-item">
-        <label>折扣率 (%)</label>
-        <input type="number" id="discountRate" placeholder="例如 10" oninput="calculate()">
-        <div id="warning" class="warning-text"></div>
-    </div>
-
-    <div class="result-panel">
-        <div class="result-row">
-            <span>小計</span>
-            <span id="subtotal">NT$ 0</span>
+    <div class="container">
+        <div id="status-label">準備開始</div>
+        <div id="timer-display">25:00</div>
+        
+        <div class="controls">
+            <button id="btn-start">開始</button>
+            <button id="btn-reset">重置</button>
         </div>
-        <div class="result-row">
-            <span>折扣金額</span>
-            <span id="discountAmount">NT$ 0</span>
-        </div>
-        <div class="total-row">
-            <span class="total-label">總計</span>
-            <span class="total-value"><small class="currency-symbol">NT$</small><span id="grandTotal">0</span></span>
-        </div>
+
+        <div id="round-count">今日已完成 0 輪</div>
     </div>
-</div>
 
-<script>
-    function calculate() {
-        // 取得輸入值，若為空或非數字則視為 0
-        const students = parseFloat(document.getElementById('students').value) || 0;
-        const hours = parseFloat(document.getElementById('hours').value) || 0;
-        const price = parseFloat(document.getElementById('price').value) || 0;
-        const discountRate = parseFloat(document.getElementById('discountRate').value) || 0;
+    <script>
+        // 設定時間（秒）
+        const TIME_CONFIG = {
+            WORK: 25 * 60,
+            SHORT_BREAK: 5 * 60,
+            LONG_BREAK: 15 * 60
+        };
 
-        // 計算邏輯
-        const subtotal = students * hours * price;
-        const discountAmount = subtotal * (discountRate / 100);
-        const grandTotal = subtotal - discountAmount;
+        let timeLeft = TIME_CONFIG.WORK;
+        let timerInterval = null;
+        let isRunning = false;
+        let currentMode = 'WORK'; // 'WORK', 'BREAK'
+        let completedRounds = 0;
 
-        // 折扣驗證
-        const warningEl = document.getElementById('warning');
-        if (discountRate > 30) {
-            warningEl.innerText = '⚠️ 折扣率過高，請確認';
-        } else {
-            warningEl.innerText = '';
+        const labelEl = document.getElementById('status-label');
+        const timerEl = document.getElementById('timer-display');
+        const startBtn = document.getElementById('btn-start');
+        const resetBtn = document.getElementById('btn-reset');
+        const roundsEl = document.getElementById('round-count');
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            timerEl.textContent = timeStr;
+            document.title = `(${timeStr}) 番茄鐘`;
+
+            if (currentMode === 'WORK') {
+                labelEl.textContent = '工作中';
+                labelEl.style.color = 'var(--accent-color)';
+            } else {
+                labelEl.textContent = '休息中';
+                labelEl.style.color = 'var(--break-color)';
+            }
         }
 
-        // 格式化數字
-        const formatNum = (num) => Math.round(num).toLocaleString('zh-TW');
+        function switchMode() {
+            if (currentMode === 'WORK') {
+                completedRounds++;
+                roundsEl.textContent = `今日已完成 ${completedRounds} 輪`;
+                
+                // 每 4 輪一次長休息
+                if (completedRounds % 4 === 0) {
+                    currentMode = 'BREAK';
+                    timeLeft = TIME_CONFIG.LONG_BREAK;
+                } else {
+                    currentMode = 'BREAK';
+                    timeLeft = TIME_CONFIG.SHORT_BREAK;
+                }
+            } else {
+                currentMode = 'WORK';
+                timeLeft = TIME_CONFIG.WORK;
+            }
+            updateDisplay();
+            // 自動開始下一段
+            startTimer();
+        }
 
-        // 更新顯示
-        document.getElementById('subtotal').innerText = 'NT$ ' + formatNum(subtotal);
-        document.getElementById('discountAmount').innerText = 'NT$ ' + formatNum(discountAmount);
-        document.getElementById('grandTotal').innerText = formatNum(grandTotal);
-    }
-</script>
+        function tick() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                switchMode();
+            }
+        }
 
+        function startTimer() {
+            if (isRunning) return;
+            isRunning = true;
+            startBtn.textContent = '暫停';
+            timerInterval = setInterval(tick, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            startBtn.textContent = '繼續';
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            currentMode = 'WORK';
+            timeLeft = TIME_CONFIG.WORK;
+            startBtn.textContent = '開始';
+            labelEl.textContent = '準備開始';
+            updateDisplay();
+        }
+
+        // 事件監聽
+        startBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // 空白鍵控制
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // 防止網頁捲動
+                toggleTimer();
+            }
+        });
+
+        // 初始化顯示
+        updateDisplay();
+        labelEl.textContent = '準備開始';
+    </script>
 </body>
 </html>
